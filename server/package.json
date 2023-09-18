@@ -1,0 +1,15 @@
+{
+  "name": "wh_exam_1_server",
+  "version": "1.0.0",
+  "description": "server for wh_exam_1",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "james",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.5.0",
+    "express": "^4.18.2"
+  }
+}
