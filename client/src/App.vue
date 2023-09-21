@@ -1,18 +1,37 @@
 <script setup>
-import { onMounted } from 'vue';
+import axios from 'axios';
+import { onMounted, ref } from 'vue';
 import { chuckStore } from './stores/chucknorris';
 
+const mainUrl = 'https://api.chucknorris.io';
+
 const useChuckStore = chuckStore();
-let categories = [];
-// let selectedCategory = null;
+const categories = ref([]);
+const selectedCategory = ref('');
+
+const filtered = (item) => {
+  let splitted = item.split('');
+  splitted[0] = splitted[0].toUpperCase();
+  return splitted.join('');
+};
 
 onMounted(() => {
   useChuckStore.getCategories()
   .then((response) => {
-    categories = response.data
-    console.log(categories)
+    categories.value = response.data
   });
 })
+
+const searchByCategory = () => {
+  if (selectedCategory.value) {
+    useChuckStore.searchByCategory(selectedCategory.value)
+    .then((response) => {
+      useChuckStore.searchedJoke = response.data
+    })
+  }
+  
+}
+
 </script>
 
 <template>
@@ -26,6 +45,7 @@ onMounted(() => {
         <ul class="nav nav-tabs" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#category-tab-pane" type="button" role="tab">Category</button>
+            <button class="nav-link" id="free-tab" data-bs-toggle="tab" data-bs-target="#free-tab-pane" type="button" role="tab">Free Text</button>
           </li>
         </ul>
         <div class="tab-content" id="myTabContent">
@@ -36,18 +56,41 @@ onMounted(() => {
               </div>
               <div class="col-auto w-25">
                 <label for="category" class="visually-hidden">Category</label>
-                <select class="form-control">
-                  <!-- <option value="null" selected>Select Category</option> -->
-                  <option v-for="category in categories" :value="category" v-bind:key="category">{{ category }}</option>
+                <select class="form-control" v-model="selectedCategory">
+                  <option selected disabled value="">Select Category</option>
+                  <option v-for="category in categories" :value="category" v-bind:key="category">{{ filtered(category) }}</option>
                 </select>
               </div>
               <div class="col-auto">
-                <button type="submit" class="btn btn-primary mb-3">Search</button>
+                <button type="button" class="btn btn-primary mb-3" @click="searchByCategory">Search</button>
               </div>
+            </form>
+
+            <div class="col-12">
+              <div class="card" v-if="useChuckStore.searchedJoke.id">
+                <div class="card-header">
+                  {{ useChuckStore.searchedJoke.created_at }}
+                </div>
+                <div class="card-body">
+                  <p class="card-text">{{ useChuckStore.searchedJoke.value }}</p>
+                </div>
+                <div class="card-footer">
+                  Joke Page
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tab-pane fade" id="free-tab-pane" role="tabpanel" tabindex="0">
+            <form class="form-inline mt-3">
+              <div class="form-group mx-sm-3 mb-2 d-inline">
+                <input type="text" class="form-control d-inline" id="search" placeholder="Search..">
+              </div>
+              <button type="submit" class="btn btn-primary mb-2 d-inline">Search</button>
             </form>
           </div>
         </div>
       </div>
+      
     </div>
   </div>
 </template>
